@@ -26,7 +26,7 @@
 MEMORY
 {
     flash : org = 0x08000000, len = 16k
-    flash2 : org = 0x0800C000, len = 512k - 48k - 16	/* NEW_APP_MAX_SIZE - CRC_INFO */
+    flash2 : org = 0x0800C000, len = 524288 - 16	/* NEW_APP_MAX_SIZE - CRC_INFO */
 	crcinfo : org = 0x0807FFF0, len = 8		/* CRC info */
     ram0  : org = 0x20000000, len = 128k    /* SRAM1 + SRAM2 */
     ram1  : org = 0x20000000, len = 112k    /* SRAM1 */
@@ -106,7 +106,7 @@ SECTIONS
         PROVIDE(__fini_array_end = .);
     } > flash2
 
-    .text : ALIGN(16)
+    .text : ALIGN(16) SUBALIGN(16)
     {
         *(.text)
         *(.text.*)
@@ -116,12 +116,6 @@ SECTIONS
         *(.glue_7)
         *(.gcc*)
     } > flash2
-
-    .text2 : ALIGN(16)
-    {
-        *(.text2)
-        *(.text2.*)
-    } > flash
 
     .ARM.extab :
     {
@@ -200,17 +194,7 @@ SECTIONS
         . = ALIGN(4);
         PROVIDE(_bss_end = .);
         PROVIDE(end = .);
-    } > BSS_RAM
-
-    /* Outside the ranges initialized at boot (data copy and bss zeroing), so
-       contents survive a reset. Used for crash diagnostics (crash_info). */
-    .noinit (NOLOAD) : ALIGN(4)
-    {
-        . = ALIGN(4);
-        *(.noinit)
-        *(.noinit.*)
-        . = ALIGN(4);
-    } > BSS_RAM
+    } > BSS_RAM    
 
     .ram0 (NOLOAD) : ALIGN(4)
     {

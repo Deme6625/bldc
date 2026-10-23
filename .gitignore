@@ -17,8 +17,3 @@ workspace.code-workspace
 *.pro.shared
 
 .vscode
-
-.cache
-compile_commands.json
-
-/result

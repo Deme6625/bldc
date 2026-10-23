@@ -64,8 +64,7 @@ typedef enum {
 	FOC_SENSOR_MODE_HFI_V2,
 	FOC_SENSOR_MODE_HFI_V3,
 	FOC_SENSOR_MODE_HFI_V4,
-	FOC_SENSOR_MODE_HFI_V5,
-	FOC_SENSOR_MODE_ENCODER_AB
+	FOC_SENSOR_MODE_HFI_V5
 } mc_foc_sensor_mode;
 
 typedef enum {
@@ -77,8 +76,7 @@ typedef enum {
 typedef enum {
 	FOC_CURRENT_SAMPLE_MODE_LONGEST_ZERO = 0,
 	FOC_CURRENT_SAMPLE_MODE_ALL_SENSORS,
-	FOC_CURRENT_SAMPLE_MODE_HIGH_CURRENT,
- 	FOC_CURRENT_SAMPLE_MODE_BEST_SENSOR // Experimental, not used!
+	FOC_CURRENT_SAMPLE_MODE_HIGH_CURRENT
 } mc_foc_current_sample_mode;
 
 // Auxiliary output mode
@@ -136,12 +134,6 @@ typedef enum {
 } mc_foc_observer_type;
 
 typedef enum {
-	FOC_AMB_MODE_SIX_VECTOR = 0,
-	FOC_AMB_MODE_D_SINGLE_PULSE,
-	FOC_AMB_MODE_D_DOUBLE_PULSE
-} mc_foc_hfi_amb_mode;
-
-typedef enum {
 	FAULT_CODE_NONE = 0,
 	FAULT_CODE_OVER_VOLTAGE,
 	FAULT_CODE_UNDER_VOLTAGE,
@@ -172,10 +164,6 @@ typedef enum {
 	FAULT_CODE_PHASE_FILTER,
 	FAULT_CODE_ENCODER_FAULT,
 	FAULT_CODE_LV_OUTPUT_FAULT,
-	FAULT_CODE_ENCODER_SLIP,
-	FAULT_CODE_OVERSPEED,
-	FAULT_CODE_UNDERSPEED,
-	FAULT_CODE_ABS_OVERSPEED
 } mc_fault_code;
 
 typedef enum {
@@ -217,12 +205,6 @@ typedef enum {
 	SENSOR_PORT_MODE_TLE5012_SSC_SW,
 	SENSOR_PORT_MODE_TLE5012_SSC_HW,
 	SENSOR_PORT_MODE_CUSTOM_ENCODER,
-	SENSOR_PORT_MODE_PWM,
-	SENSOR_PORT_MODE_PWM_ABI,
-	SENSOR_PORT_MODE_MA782,
-	SENSOR_PORT_MODE_AMT22,
-	SENSOR_PORT_MODE_MT6835_SPI_HW,
-	SENSOR_PORT_MODE_PWM_ABI_INVERTED,
 } sensor_port_mode;
 
 typedef struct {
@@ -263,8 +245,7 @@ typedef enum {
 	CAN_BAUD_20K,
 	CAN_BAUD_50K,
 	CAN_BAUD_75K,
-	CAN_BAUD_100K,
-	CAN_BAUD_INVALID = 255,
+	CAN_BAUD_100K
 } CAN_BAUD;
 
 typedef enum {
@@ -306,7 +287,6 @@ typedef struct {
 
 #define BMS_MAX_CELLS	50
 #define BMS_MAX_TEMPS	50
-#define BMS_STATUS_LEN	41
 
 typedef struct {
 	float v_tot;
@@ -325,8 +305,6 @@ typedef struct {
 	float pressure;
 	float hum;
 	float temp_max_cell;
-	float v_cell_min;
-	float v_cell_max;
 	float soc;
 	float soh;
 	int can_id;
@@ -334,11 +312,6 @@ typedef struct {
 	float wh_cnt_chg_total;
 	float ah_cnt_dis_total;
 	float wh_cnt_dis_total;
-	int is_charging;
-	int is_balancing;
-	int is_charge_allowed;
-	int data_version;
-	char status[BMS_STATUS_LEN];
 	systime_t update_time;
 } bms_values;
 
@@ -353,7 +326,6 @@ typedef struct {
 	bool is_charging;
 	bool is_balancing;
 	bool is_charge_allowed;
-	int data_version;
 } bms_soc_soh_temp_stat;
 
 typedef enum {
@@ -403,7 +375,6 @@ typedef struct {
 	float l_abs_current_max;
 	float l_min_erpm;
 	float l_max_erpm;
-	float l_erpm_abs_overspeed;
 	float l_erpm_start;
 	float l_max_erpm_fbrake;
 	float l_max_erpm_fbrake_cc;
@@ -425,10 +396,7 @@ typedef struct {
 	float l_watt_min;
 	float l_current_max_scale;
 	float l_current_min_scale;
-	float l_in_current_max_scale;
-	float l_in_current_min_scale;
 	float l_duty_start;
-	uint8_t l_additional_faults;
 	// Overridden limits (Computed during runtime)
 	float lo_current_max;
 	float lo_current_min;
@@ -476,6 +444,8 @@ typedef struct {
 	float foc_start_curr_dec_rpm;
 	float foc_openloop_rpm;
 	float foc_openloop_rpm_low;
+	float foc_d_gain_scale_start;
+	float foc_d_gain_scale_max_mod;
 	float foc_sl_openloop_hyst;
 	float foc_sl_openloop_time;
 	float foc_sl_openloop_time_lock;
@@ -496,9 +466,6 @@ typedef struct {
 	float foc_current_filter_const;
 	mc_foc_cc_decoupling_mode foc_cc_decoupling;
 	mc_foc_observer_type foc_observer_type;
-	mc_foc_hfi_amb_mode foc_hfi_amb_mode;
-	float foc_hfi_amb_current;
-	uint8_t foc_hfi_amb_tres;
 	float foc_hfi_voltage_start;
 	float foc_hfi_voltage_run;
 	float foc_hfi_voltage_max;
@@ -506,11 +473,10 @@ typedef struct {
 	float foc_hfi_max_err;
 	float foc_hfi_hyst;
 	float foc_sl_erpm_hfi;
-	float foc_hfi_reset_erpm;
 	uint16_t foc_hfi_start_samples;
 	float foc_hfi_obs_ovr_sec;
 	foc_hfi_samples foc_hfi_samples;
-	uint8_t foc_offsets_cal_mode;
+	bool foc_offsets_cal_on_boot;
 	float foc_offsets_current[3];
 	float foc_offsets_voltage[3];
 	float foc_offsets_voltage_undriven[3];
@@ -523,11 +489,8 @@ typedef struct {
 	float foc_fw_duty_start;
 	float foc_fw_ramp_time;
 	float foc_fw_q_current_factor;
-	float foc_fw_backoff;
 	FOC_SPEED_SRC foc_speed_soure;
 	bool foc_short_ls_on_zero_duty;
-	float foc_overmod_factor;
-	float foc_mag_vd_max;
 
 	PID_RATE sp_pid_loop_rate;
 
@@ -721,8 +684,6 @@ typedef struct {
 	bool tc;
 	float tc_max_diff;
 	uint32_t update_rate_hz;
-	float coast_brake_level;
-	float coast_brake_ramp_time;
 } adc_config;
 
 // Nunchuk control types
@@ -748,8 +709,6 @@ typedef struct {
 	bool use_smart_rev;
 	float smart_rev_max_duty;
 	float smart_rev_ramp_time;
-	float coast_brake_level;
-	float coast_brake_ramp_time;
 } chuk_config;
 
 typedef struct {
@@ -842,8 +801,7 @@ typedef enum {
 	IMU_TYPE_EXTERNAL_MPU9X50,
 	IMU_TYPE_EXTERNAL_ICM20948,
 	IMU_TYPE_EXTERNAL_BMI160,
-	IMU_TYPE_EXTERNAL_LSM6DS3,
-	IMU_TYPE_EXTERNAL_LSM6DSV32X
+	IMU_TYPE_EXTERNAL_LSM6DS3
 } IMU_TYPE;
 
 typedef enum {
@@ -884,7 +842,6 @@ typedef enum {
 	CAN_MODE_UAVCAN,
 	CAN_MODE_COMM_BRIDGE,
 	CAN_MODE_UNUSED,
-	CAN_MODE_VESC_UAVCAN
 } CAN_MODE;
 
 typedef enum {
@@ -904,13 +861,7 @@ typedef enum {
 	KILL_SW_MODE_PPM_LOW,
 	KILL_SW_MODE_PPM_HIGH,
 	KILL_SW_MODE_ADC2_LOW,
-	KILL_SW_MODE_ADC2_HIGH,
-	KILL_SW_MODE_ADC3_LOW,
-	KILL_SW_MODE_ADC3_HIGH,
-	KILL_SW_MODE_SWDIO_LOW,
-	KILL_SW_MODE_SWDIO_HIGH,
-	KILL_SW_MODE_SWCLK_LOW,
-	KILL_SW_MODE_SWCLK_HIGH,
+	KILL_SW_MODE_ADC2_HIGH
 } KILL_SW_MODE;
 
 typedef struct {
@@ -1148,12 +1099,6 @@ typedef enum {
 	//COMM_PINLOCK3							= 155,
 
 	COMM_SHUTDOWN							= 156,
-	
-	COMM_FW_INFO							= 157,
-
-	COMM_CAN_UPDATE_BAUD_ALL				= 158,
-
-	COMM_MOTOR_ESTOP						= 159,
 } COMM_PACKET_ID;
 
 // CAN commands
@@ -1221,12 +1166,6 @@ typedef enum {
 	CAN_PACKET_GNSS_LAT						= 60,
 	CAN_PACKET_GNSS_LON						= 61,
 	CAN_PACKET_GNSS_ALT_SPEED_HDOP			= 62,
-	CAN_PACKET_UPDATE_BAUD					= 63,
-	CAN_PACKET_BMS_STATUS_1					= 64,
-	CAN_PACKET_BMS_STATUS_2					= 65,
-	CAN_PACKET_BMS_STATUS_3					= 66,
-	CAN_PACKET_BMS_STATUS_4					= 67,
-	CAN_PACKET_BMS_STATUS_5					= 68,
 	CAN_PACKET_MAKE_ENUM_32_BITS = 0xFFFFFFFF,
 } CAN_PACKET_ID;
 
@@ -1428,7 +1367,7 @@ typedef union {
 } eeprom_var;
 
 #define EEPROM_VARS_HW			32
-#define EEPROM_VARS_CUSTOM		256
+#define EEPROM_VARS_CUSTOM		128
 
 typedef struct {
 	float ah_tot;
@@ -1467,18 +1406,6 @@ typedef struct __attribute__((packed)) {
 	// HW-specific data
 	uint32_t hw_config_init_flag;
 	uint8_t hw_config[128];
-
-	// Encoder correction table
-	uint32_t enc_corr_init_flag;
-	int8_t enc_corr_en;
-	int8_t enc_corr[360];
-
-	// CAN settings
-	uint32_t can_init_flag;
-	uint8_t can_baud;
-	uint8_t can_id;
-
-	uint8_t dummy;
 } backup_data;
 
 #endif /* DATATYPES_H_ */

@@ -202,9 +202,14 @@ size: build/$(PROJECT).elf
 # Generate the targets for whatever boards are in each list
 FW_TARGETS := $(addprefix fw_, $(ALL_BOARD_NAMES))
 
-.PHONY: all_fw all_fw_clean
+.PHONY: all_fw all_fw_clean clean
 all_fw:        $(addsuffix _vescfw, $(FW_TARGETS))
 all_fw_clean:  $(addsuffix _clean,  $(FW_TARGETS))
+
+clean:
+	$(V0) @echo " CLEAN      build/"
+	$(V1) rm -rf "$(BUILD_DIR)"
+	$(V0) @echo " CLEAN      done"
 
 # Expand the firmware rules
 $(foreach board, $(ALL_BOARD_NAMES), $(eval $(call FW_TEMPLATE,$(board),$(BUILD_DIR)/$(board),$(board),$(GIT_BRANCH_NAME),$(GIT_COMMIT_HASH)$(GIT_DIRTY_LABEL),$(ARM_GCC_VERSION))))

@@ -143,10 +143,20 @@ else
 endif
 
 ifeq ($(OS),Windows_NT)
-  DEPPATH = build\$(PROJECT)\.dep
+	DEPPATH = build\$(PROJECT)\.dep
+	DEP_LOG = Windows
 else
-  DEPPATH = build/$(PROJECT)/.dep
+	DEPPATH = build/$(PROJECT)/.dep
+	DEP_LOG = Unix/Linux/Mac
 endif
+
+# 输出调试信息 - Makefile解析时立即执行
+$(info ========================================)
+$(info [DEBUG] OS variable = '$(OS)')
+$(info [DEBUG] DEPPATH = $(DEPPATH))
+$(info [DEBUG] DEP_LOG = $(DEP_LOG))
+$(info [DEBUG] PROJECT = $(PROJECT))
+$(info ========================================)
 
 # Generate dependency information
 ASFLAGS  += -MD -MP -MF $(DEPPATH)/$(@F).d
@@ -169,6 +179,7 @@ POST_MAKE_ALL_RULE_HOOK:
 $(OBJS): | $(BUILDDIR) $(OBJDIR) $(LSTDIR)
 
 $(BUILDDIR):
+	@echo "[BUILD] DEPPATH=$(DEPPATH) PROJECT=$(PROJECT) OS=$(OS)"
 ifneq ($(USE_VERBOSE_COMPILE),yes)
 	@echo Compiler Options
 	@echo $(CC) -c $(CFLAGS) -I. $(IINCDIR) main.c -o main.o
@@ -317,12 +328,17 @@ clean:
 
 #
 # Include the dependency files, should be the last of the makefile
-#
+#windows 下 执行if语句，此处创建.dep文件夹
 ifeq ($(OS),Windows_NT)
-  $(shell cmd /C if not exist "$(DEPPATH)" mkdir "$(DEPPATH)")
+#$(shell cmd /C if not exist "$(DEPPATH)" mkdir -p "$(DEPPATH)")
+$(shell mkdir -p "$(DEPPATH)" 2>/dev/null)
 else
-  $(shell mkdir $(DEPPATH) 2>/dev/null)
+$(shell mkdir -p $(DEPPATH) 2>/dev/null)
+#$(shell mkdir -p "$(DEPPATH)" 2>/dev/null)
 endif
+
+#$(shell mkdir -p "$(DEPPATH)" 2>/dev/null)
+@echo "[DEP] Ensured directory exists: $(DEPPATH)"
 
 -include $(wildcard $(DEPPATH)/*)
 
